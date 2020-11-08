@@ -124,7 +124,7 @@ def image_preprocess(image, target_size, gt_boxes=None):
         gt_boxes[:, [1, 3]] = gt_boxes[:, [1, 3]] * scale + dh
         return image_paded, gt_boxes
 
-def draw_bbox(image, bboxes, classes=read_class_names(cfg.YOLO.CLASSES), show_label=True):
+def detect_coordinates(image, bboxes, classes=read_class_names(cfg.YOLO.CLASSES), show_label=True):
     num_classes = len(classes)
     image_h, image_w, _ = image.shape
     hsv_tuples = [(1.0 * x / num_classes, 1., 1.) for x in range(num_classes)]
@@ -136,6 +136,7 @@ def draw_bbox(image, bboxes, classes=read_class_names(cfg.YOLO.CLASSES), show_la
     random.seed(None)
 
     out_boxes, out_scores, out_classes, num_boxes = bboxes
+    return_value = []
     for i in range(num_boxes[0]):
         if int(out_classes[0][i]) < 0 or int(out_classes[0][i]) > num_classes: continue
         coor = out_boxes[0][i]
@@ -147,20 +148,14 @@ def draw_bbox(image, bboxes, classes=read_class_names(cfg.YOLO.CLASSES), show_la
         fontScale = 0.5
         score = out_scores[0][i]
         class_ind = int(out_classes[0][i])
-        bbox_color = colors[class_ind]
-        bbox_thick = int(0.6 * (image_h + image_w) / 600)
-        c1, c2 = (coor[1], coor[0]), (coor[3], coor[2])
-        cv2.rectangle(image, c1, c2, bbox_color, bbox_thick)
-
-        if show_label:
-            bbox_mess = '%s: %.2f' % (classes[class_ind], score)
-            t_size = cv2.getTextSize(bbox_mess, 0, fontScale, thickness=bbox_thick // 2)[0]
-            c3 = (c1[0] + t_size[0], c1[1] - t_size[1] - 3)
-            cv2.rectangle(image, c1, (np.float32(c3[0]), np.float32(c3[1])), bbox_color, -1) #filled
-
-            cv2.putText(image, bbox_mess, (c1[0], np.float32(c1[1] - 2)), cv2.FONT_HERSHEY_SIMPLEX,
-                        fontScale, (0, 0, 0), bbox_thick // 2, lineType=cv2.LINE_AA)
-    return image
+        c1, c2 = (int(coor[1]), int(coor[0])), (int(coor[3]), int(coor[2]))
+        return_value.append(
+            {
+                "image": image[c1[1]:c2[1], c1[0]:c2[0]],
+                "center": ((c1[0]+c2[0]) // 2, (c1[1]+c2[1]) // 2)
+            }
+        )
+    return return_value
 
 def bbox_iou(bboxes1, bboxes2):
     """
