@@ -14,7 +14,7 @@ from tensorflow.compat.v1 import InteractiveSession
 
 class FLAGS: # Customizable settings.
     detection_weights = "weights\\yolov4-detection.tflite"
-    classification_weights = "weights\\yolov4.tflite"
+    classification_weights = "weights\\yolov4-detection.tflite"
     size = 416
     iou = 0.45
     score = 0.52
@@ -72,18 +72,24 @@ classification_output_details = classification_interpreter.get_output_details()
 
 
 def classify_flowers(output_flowers):
-    images_data = [
-        cv2.resize(flower['image'], (FLAGS.size, FLAGS.size)) / 255.0 for flower in output_flowers
-    ]
-    input_data = np.asarray(images_data, dtype=np.float32)
-    classification_interpreter.set_tensor(classification_input_details[0]['index'], images_data)
+    # images_data = [
+    #     cv2.resize(flower['image'], (FLAGS.size, FLAGS.size)) / 255.0 for flower in output_flowers
+    # ]
+    # input_data = np.asarray(images_data, dtype=np.float32)
+    # classification_interpreter.set_tensor(classification_input_details[0]['index'], images_data)
 
-    classification_interpreter.invoke()
+    # classification_interpreter.invoke()
 
-    output_data = classification_interpreter.get_tensor(classification_output_details[0]['index'])
-    print(output_data)
+    # output_data = classification_interpreter.get_tensor(classification_output_details[0]['index'])
+    # print(output_data)
+    return [flower['center'] for flower in output_flowers]
 
+def transformation_matrix(flower):
+    x, y = flower
+    return (x, y)
 
 img = preprocess_cam('test.jpg')
-flowers = detect_flowers(img)
-print(flowers)
+detected_flowers = detect_flowers(img)
+chamomile_flowers = classify_flowers(detected_flowers)
+angles = list(map(transformation_matrix, chamomile_flowers))
+print(angles)
