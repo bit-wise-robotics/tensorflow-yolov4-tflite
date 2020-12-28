@@ -13,8 +13,8 @@ from tensorflow.compat.v1 import ConfigProto
 from tensorflow.compat.v1 import InteractiveSession
 
 class FLAGS: # Customizable settings.
-    detection_weights = r"weights\yolov4.tflite"
-    classification_weights = r"weights\yolov4.tflite"
+    detection_weights = "weights\\yolov4-detection.tflite"
+    classification_weights = "weights\\yolov4.tflite"
     size = 416
     iou = 0.45
     score = 0.52
@@ -84,22 +84,6 @@ def classify_flowers(output_flowers):
     print(output_data)
 
 
-from os import listdir
-from os.path import isfile, join
-done = [f for f in listdir(r'D:\bit-wise\.flowers\dataset') if isfile(join(r'D:\bit-wise\.flowers\dataset', f))][:5]
-import time
-start = time.time()
-
-for i in done:
-    img = preprocess_cam('D:\\bit-wise\\.flowers\\dataset\\' + i)
-    flowers = detect_flowers(img)
-    y = classify_flowers(flowers)
-    # original_image = cv2.imread('D:\\bit-wise\\.flowers\\dataset\\' + i)
-    # for i in x:
-    #     original_image = cv2.circle(original_image, i['center'], 1, (0, 0, 255), 5)
-    # cv2.imshow("x", original_image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-
-
-print(time.time() - start)
+img = preprocess_cam('test.jpg')
+flowers = detect_flowers(img)
+print(flowers)
